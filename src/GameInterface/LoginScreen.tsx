@@ -9,6 +9,7 @@ export function LoginScreen() {
   const [stage, setStage] = useState<Stage>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
+  const [devCode, setDevCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -32,7 +33,13 @@ export function LoginScreen() {
         setError(data.error ?? "Could not send code");
         return;
       }
+      const data = (await res.json().catch(() => ({}))) as { devCode?: string };
       setStage("code");
+      // Dev mode: pre-fill and surface the code so login works without SMTP.
+      if (data.devCode) {
+        setDevCode(data.devCode);
+        setCode(data.devCode);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -143,6 +150,17 @@ export function LoginScreen() {
               {t("common.sentTo")} <span className="text-foreground font-semibold normal-case">{email}</span>
             </p>
 
+            {devCode && (
+              <div className="rounded-xl border border-primary/40 bg-primary/10 px-4 py-3 text-center">
+                <p className="text-[10px] uppercase tracking-widest text-primary/80 font-bold mb-1">
+                  Dev mode — no email configured
+                </p>
+                <p className="text-2xl font-black font-mono tracking-[0.4em] text-primary glow-text">
+                  {devCode}
+                </p>
+              </div>
+            )}
+
             <div className="card-arcade rounded-xl p-1.5">
               <div className="relative flex items-center">
                 <KeyRound className="absolute left-4 w-5 h-5 text-muted-foreground pointer-events-none" />
@@ -179,7 +197,7 @@ export function LoginScreen() {
 
             <button
               type="button"
-              onClick={() => { setStage("email"); setCode(""); setError(null); }}
+              onClick={() => { setStage("email"); setCode(""); setDevCode(null); setError(null); }}
               className="flex items-center justify-center gap-2 w-full py-3 px-6 text-muted-foreground font-semibold uppercase tracking-wider text-xs transition-all hover:text-primary cursor-pointer bg-transparent border-0"
             >
               <ArrowLeft className="w-4 h-4" />

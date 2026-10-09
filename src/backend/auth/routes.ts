@@ -26,7 +26,10 @@ export const authRoutes = {
     if (!email || !EMAIL_RE.test(email))
       return Response.json({ error: "invalid email" }, { status: 400 });
     try {
-      await requestLoginCode(email);
+      const { devCode } = await requestLoginCode(email);
+      // Dev mode: no SMTP configured, so the code is returned to be shown on
+      // screen (never in production — SMTP2GO_API_KEY presence gates this).
+      return Response.json(devCode ? { ok: true, devCode } : { ok: true });
     } catch (e) {
       console.error("[auth] failed to send login code:", e);
       return Response.json(

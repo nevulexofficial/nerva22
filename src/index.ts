@@ -21,6 +21,7 @@ import financesPage from "./pages/finances/index.html";
 import matchPreviewPage from "./pages/match-preview/index.html";
 import matchResultPage from "./pages/match-result/index.html";
 import inboxPage from "./pages/inbox/index.html";
+import adminPage from "./pages/admin/index.html";
 
 const server = serve({
   routes: {
@@ -33,6 +34,7 @@ const server = serve({
     "/scout": scoutPage,
     "/transfers": transfersPage,
     "/inbox": inboxPage,
+    "/admin": adminPage,
 
     "/leagues": leaguesPage,
     "/leagues/:league": leaguesPage,

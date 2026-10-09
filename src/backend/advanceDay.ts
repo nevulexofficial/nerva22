@@ -3,6 +3,7 @@ import { saveService, SaveService } from "@/backend/SaveService";
 import { FileSystemDAL } from "@/backend/dal/FileSystemDAL";
 import { BufferingSaveDAL } from "@/backend/dal/BufferingSaveDAL";
 import { applyRandomStartKit } from "@/backend/startKits";
+import { syncWorldPlayer } from "@/backend/worldRoutes";
 import { executeTransferFee } from "@/backend/FinancialService";
 import type { LeagueTeam, Squad } from "@/types/playerTypes";
 import type { StoredDayLog, TrainingEvent, RestEvent } from "@/types/dayLogTypes";
@@ -790,6 +791,11 @@ export const advanceDayRoutes = {
 
     const outcome = await advanceOneDay(saveService, req.params.saveId!, playedMatchOverride);
     if (!outcome.ok) return Response.json({ error: outcome.error }, { status: outcome.status });
+
+    // Shared world (Supabase): publish the club snapshot — fire-and-forget so a
+    // slow/unconfigured Supabase never blocks the game loop.
+    void syncWorldPlayer({ userId: auth.userId, email: auth.email, saveId: req.params.saveId! });
+
     return Response.json(outcome.payload);
   },
 

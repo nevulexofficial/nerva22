@@ -9,17 +9,22 @@ export interface OutgoingEmail {
 
 const SMTP2GO_ENDPOINT = "https://api.smtp2go.com/v3/email/send";
 
+export type DeliveryMode = "smtp" | "dev";
+
 /**
  * Sends an email. In production (SMTP2GO_API_KEY set) it delivers via the
  * SMTP2GO HTTP send API. With no API key configured it falls back to the dev
  * log (console + Data/email-log.json) so local development needs no credentials.
+ *
+ * Returns how the message was delivered so callers can surface the content in
+ * dev mode (e.g. show the login code on screen instead of emailing it).
  */
-export async function sendEmail(msg: OutgoingEmail): Promise<void> {
+export async function sendEmail(msg: OutgoingEmail): Promise<DeliveryMode> {
   const apiKey = process.env.SMTP2GO_API_KEY?.trim();
 
   if (!apiKey) {
     await logEmail(msg);
-    return;
+    return "dev";
   }
 
   const from = process.env.EMAIL_FROM?.trim();
@@ -54,4 +59,5 @@ export async function sendEmail(msg: OutgoingEmail): Promise<void> {
     const detail = json?.data?.failures ?? json ?? `HTTP ${res.status}`;
     throw new Error(`SMTP2GO send failed: ${JSON.stringify(detail)}`);
   }
+  return "smtp";
 }

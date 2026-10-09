@@ -110,7 +110,7 @@ export function LandingScreen() {
             href="/"
             className="text-xl font-black font-display tracking-wider no-underline text-foreground"
           >
-{t("common.touchlines").split(" ")[0]}<span className="text-primary">{t("common.touchlines").split(" ")[1]}</span>
+{t("common.touchlines").slice(0, -1)}<span className="text-primary">{t("common.touchlines").slice(-1)}</span>
           </a>
 
           <div className="hidden md:flex items-center gap-8">
@@ -136,40 +136,54 @@ export function LandingScreen() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center pt-16 px-6">
+      <section className="relative min-h-screen flex items-center justify-center pt-16 px-6 overflow-hidden">
         {/* Background glow */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/20 rounded-full blur-[150px]" />
+          <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-accent/15 rounded-full blur-[150px]" />
+          <div className="absolute top-1/3 right-1/6 w-[300px] h-[300px] bg-chart-3/10 rounded-full blur-[140px]" />
+          {/* Subtle pitch grid */}
+          <div
+            className="absolute inset-0 opacity-[0.06]"
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
+              backgroundSize: "72px 72px",
+            }}
+          />
         </div>
 
         <div className="relative z-10 text-center max-w-4xl mx-auto">
           {/* Badge */}
-          <div className="inline-flex flex-wrap items-center justify-center gap-2 mb-6">
-            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-primary/20 border border-primary/50 rounded text-xs font-bold uppercase tracking-widest text-primary">
+          <div className="inline-flex flex-wrap items-center justify-center gap-2 mb-7">
+            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-primary/15 border border-primary/40 rounded-full text-xs font-bold uppercase tracking-widest text-primary backdrop-blur-sm">
               <Github className="w-3.5 h-3.5" />
               {t("landing.freeOpenSource")}
             </span>
-            <span className="px-4 py-1.5 bg-card/40 border border-border/60 rounded text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            <span className="px-4 py-1.5 bg-card/50 border border-border/60 rounded-full text-xs font-bold uppercase tracking-widest text-muted-foreground backdrop-blur-sm">
               {t("landing.heroBadge")}
             </span>
           </div>
 
           {/* Headline */}
-          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black font-display uppercase leading-tight mb-6">
-            {t("common.touchlines").split(" ")[0]}<span className="text-primary glow-text">{t("common.touchlines").split(" ")[1]}</span>
+          <h1 className="text-5xl sm:text-6xl lg:text-8xl font-black font-display uppercase leading-[0.95] mb-6 tracking-tight">
+            <span className="bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
+              {t("common.touchlines").slice(0, -1)}
+            </span>
+            <span className="text-primary glow-text">{t("common.touchlines").slice(-1)}</span>
           </h1>
 
           {/* Subtitle */}
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p className="text-muted-foreground text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
             {t("landing.heroSubtitle")}
           </p>
 
           {/* CTAs */}
           <div className="flex flex-wrap items-center justify-center gap-4 mb-4">
-            <a href="/start" className={`${PRIMARY_BUTTON} h-11 px-8`}>
+            <a href="/start" className={`${PRIMARY_BUTTON} h-12 px-9 text-base`}>
               {t("landing.startYourLegacy")}
             </a>
-            <a href="#trailer" className={`${OUTLINE_BUTTON} h-11 px-8`}>
+            <a href="#trailer" className={`${OUTLINE_BUTTON} h-12 px-9 text-base`}>
               <Play className="w-4 h-4 mr-2 fill-current" />
               {t("landing.viewTrailer")}
             </a>
@@ -177,7 +191,7 @@ export function LandingScreen() {
               href={SOURCE_REPO_URL}
               target="_blank"
               rel="noreferrer"
-              className={`${OUTLINE_BUTTON} h-11 px-8`}
+              className={`${OUTLINE_BUTTON} h-12 px-9 text-base`}
             >
               <Github className="w-4 h-4 mr-2" />
               {t("landing.starOnGithub")}

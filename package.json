@@ -24,6 +24,7 @@
   "dependencies": {
     "@headlessui/react": "^2.2.9",
     "@modelcontextprotocol/sdk": "^1.29.0",
+    "@supabase/supabase-js": "^2.117.3",
     "bun-plugin-tailwind": "^0.1.2",
     "chart.js": "^4",
     "flag-icons": "^7.5.0",

@@ -14,6 +14,8 @@ import type { TacticsSave } from "@/types/tacticsTypes";
 import type { Fixture } from "@/types/calendarTypes";
 import { clubSlugFromSquadId, squadIdToClubSlugMap } from "@/backend/squadIdResolve";
 import { authRoutes } from "@/backend/auth/routes";
+import { worldRoutes } from "@/backend/worldRoutes";
+import { adminRoutes } from "@/backend/adminRoutes";
 import { requireAuth, requireSaveOwner } from "@/backend/auth/middleware";
 import { listUserSaveIds } from "@/backend/auth/saveOwnership";
 
@@ -22,6 +24,8 @@ const FORMATIONS_DIR = new URL("../Data/formations", import.meta.url).pathname;
 
 export const apiRoutes = {
   ...authRoutes,
+  ...worldRoutes,
+  ...adminRoutes,
   ...saveRoutes,
   ...advanceDayRoutes,
   ...transferRoutes,

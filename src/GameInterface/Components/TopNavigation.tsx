@@ -88,8 +88,8 @@ export function TopNavigation({ onAdvanceDay, advancing, leagues = [] }: Props =
             data-ui="topnav-wordmark"
             className="text-xl 2xl:text-2xl font-black font-display tracking-tight"
           >
-            <span className="text-foreground">TOUCH</span>
-            <span className="text-primary glow-text">LINES</span>
+            <span className="text-foreground">NERV</span>
+            <span className="text-primary glow-text">4</span>
           </span>
         </a>
 

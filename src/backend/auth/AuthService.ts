@@ -13,7 +13,7 @@ export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
-export async function requestLoginCode(email: string): Promise<void> {
+export async function requestLoginCode(email: string): Promise<{ devCode?: string }> {
   const normalized = normalizeEmail(email);
   const code = String(randomInt(100000, 1_000_000));
   const expiresAt = Date.now() + CODE_TTL_MS;
@@ -22,7 +22,11 @@ export async function requestLoginCode(email: string): Promise<void> {
   ).run(normalized, code, expiresAt);
 
   const message = buildLoginCodeEmail(code, CODE_TTL_MS / 60_000);
-  await sendEmail({ to: normalized, ...message });
+  const mode = await sendEmail({ to: normalized, ...message });
+
+  // Dev mode (no SMTP configured): the code never reaches a mailbox, so hand it
+  // back to the route to display on screen — otherwise login is impossible.
+  return mode === "dev" ? { devCode: code } : {};
 }
 
 export function verifyLoginCode(

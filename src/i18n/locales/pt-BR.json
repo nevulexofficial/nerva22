@@ -67,7 +67,7 @@
     "teamStats": "ESTATÍSTICAS DO TIME",
     "topRatings": "MELHORES NOTAS",
     "scorers": "ARTILHEIROS",
-    "touchlines": "TOUCH LINES",
+    "touchlines": "NERV4",
     "sentTo": "Enviado para",
     "avgSkill": "Média de Habilidade",
     "heatmapMode": "Modo Mapa de Calor",
@@ -103,7 +103,7 @@
     "freeOpenSource": "Gratuito e Open Source",
     "starOnGithub": "GitHub",
     "freeTagline": "100% gratuito — sem paywalls, sem anúncios. Open source sob a licença AGPL-3.0.",
-    "heroHeadline1": "TouchLines: Arcade",
+    "heroHeadline1": "NERV4: Arcade",
     "heroHeadline2": "Gestão Renascida",
     "heroSubtitle": "Esqueça as planilhas. Esqueça os 90 minutos de espera. Escolha um clube, escolha uma tática, dê o play — e sinta o jogo na velocidade arcade.",
     "startYourLegacy": "Comece Seu Legado",
@@ -139,7 +139,7 @@
     "faqTitle1": "Central de",
     "faqTitle2": "Inteligência",
     "faqSubtitle": "Respostas rápidas antes do apito inicial.",
-    "faqQ1": "O que torna o TouchLines diferente?",
+    "faqQ1": "O que torna o NERV4 diferente?",
     "faqA1": "É um arcade de gestão de futebol. Sem planilhas, sem 90 minutos de espera — só partidas rápidas, decisões diretas, e a parte divertida de comandar um clube.",
     "faqQ2": "Quanto dura uma partida?",
     "faqA2": "Cerca de sete minutos do apito inicial ao final. Você termina uma temporada antes dos outros terminarem a pré-temporada.",
@@ -160,7 +160,7 @@
     "availableOn": "Disponível em:",
     "soon": "Em breve",
     "mobileComingSoon": "Suporte para celular em breve",
-    "footerText": "© 2026 TouchLines",
+    "footerText": "© 2026 NERV4",
     "openSourceNote": "Gratuito e de código aberto.",
     "viewSource": "Ver código-fonte",
     "licensedUnder": "Licenciado sob",
@@ -198,12 +198,12 @@
       "official-2024": {
         "name": "Oficial 2024/25",
         "description": "Base de dados oficial completa, com dados verificados de jogadores e composições de elenco precisas.",
-        "creator": "Time TOUCHLINES"
+        "creator": "Time NERV4"
       },
       "official-2023": {
         "name": "Oficial 2023/24",
         "description": "Base da temporada passada para quem quer reescrever a história.",
-        "creator": "Time TOUCHLINES"
+        "creator": "Time NERV4"
       },
       "community-legends": {
         "name": "Base de Lendas",

@@ -67,7 +67,7 @@
     "teamStats": "TEAM STATS",
     "topRatings": "TOP RATINGS",
     "scorers": "SCORERS",
-    "touchlines": "TOUCH LINES",
+    "touchlines": "NERV4",
     "sentTo": "Sent to",
     "avgSkill": "Avg Skill",
     "heatmapMode": "Heatmap Mode",
@@ -103,7 +103,7 @@
     "freeOpenSource": "Free & Open Source",
     "starOnGithub": "Star on GitHub",
     "freeTagline": "100% free — no paywalls, no ads. Open source under AGPL-3.0.",
-    "heroHeadline1": "TouchLines: Arcade",
+    "heroHeadline1": "NERV4: Arcade",
     "heroHeadline2": "Management Reborn",
     "heroSubtitle": "Forget the spreadsheets. Forget the 90-minute waits. Pick a club, pick a tactic, hit play — and feel the game move at arcade speed.",
     "startYourLegacy": "Start Your Legacy",
@@ -139,7 +139,7 @@
     "faqTitle1": "The Intel",
     "faqTitle2": "Base",
     "faqSubtitle": "Quick answers before kick-off.",
-    "faqQ1": "What makes TouchLines different?",
+    "faqQ1": "What makes NERV4 different?",
     "faqA1": "It's a football management arcade. No spreadsheets, no 90-minute waits — just fast matches, snappy decisions, and the fun parts of running a club.",
     "faqQ2": "How long does a match take?",
     "faqA2": "Around seven minutes from kickoff to full time. You'll finish a season before others finish pre-season.",
@@ -160,7 +160,7 @@
     "availableOn": "Available on:",
     "soon": "Soon",
     "mobileComingSoon": "Mobile support coming soon",
-    "footerText": "© 2026 TouchLines",
+    "footerText": "© 2026 NERV4",
     "openSourceNote": "Free and open source.",
     "viewSource": "View source",
     "licensedUnder": "Licensed under",
@@ -211,12 +211,12 @@
       "official-2024": {
         "name": "Official 2024/25",
         "description": "The complete official database with verified player data and accurate squad compositions.",
-        "creator": "TOUCHLINES Team"
+        "creator": "NERV4 Team"
       },
       "official-2023": {
         "name": "Official 2023/24",
         "description": "Last season's database for those who want to rewrite history.",
-        "creator": "TOUCHLINES Team"
+        "creator": "NERV4 Team"
       },
       "community-legends": {
         "name": "Legends Database",
