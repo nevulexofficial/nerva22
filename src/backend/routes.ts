@@ -14,6 +14,7 @@ import type { TacticsSave } from "@/types/tacticsTypes";
 import type { Fixture } from "@/types/calendarTypes";
 import { clubSlugFromSquadId, squadIdToClubSlugMap } from "@/backend/squadIdResolve";
 import { authRoutes } from "@/backend/auth/routes";
+import { isGoogleAuthConfigured } from "@/backend/auth/googleAuth";
 import { worldRoutes } from "@/backend/worldRoutes";
 import { adminRoutes } from "@/backend/adminRoutes";
 import { requireAuth, requireSaveOwner } from "@/backend/auth/middleware";
@@ -33,10 +34,14 @@ export const apiRoutes = {
 
   // Public runtime config for the frontend. PostHog is only enabled when
   // POSTHOG_KEY is set — the project key is a public client token.
+  // googleAuth toggles the "Sign in with Google" button on the login screen.
   "/api/config": () => {
     const key = process.env.POSTHOG_KEY?.trim();
     const host = process.env.POSTHOG_HOST?.trim() || "https://us.i.posthog.com";
-    return Response.json({ posthog: key ? { key, host } : null });
+    return Response.json({
+      posthog: key ? { key, host } : null,
+      googleAuth: isGoogleAuthConfigured(),
+    });
   },
 
   "/api/logos/:league/:club": async (req: Request & { params: Record<string, string> }) => {

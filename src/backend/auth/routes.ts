@@ -2,7 +2,16 @@ import {
   requestLoginCode,
   verifyLoginCode,
   deleteSession,
+  signInWithGoogleUser,
 } from "@/backend/auth/AuthService";
+import {
+  getGoogleConfig,
+  createOAuthState,
+  consumeOAuthState,
+  buildGoogleAuthUrl,
+  exchangeGoogleCode,
+  fetchGoogleUser,
+} from "@/backend/auth/googleAuth";
 import {
   setSessionCookieHeader,
   clearSessionCookieHeader,
@@ -87,4 +96,52 @@ export const authRoutes = {
       { headers: { "Set-Cookie": clearSessionCookieHeader() } },
     );
   },
+
+  // ── Google OAuth (sign in with Google) ───────────────────────────────────
+  // Step 1: bounce the browser to Google's consent screen with a one-time
+  // CSRF state. Without GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET configured the
+  // login page hides the button, but this route also guards server-side.
+  "/api/auth/google": (req: Request) => {
+    const config = getGoogleConfig(req);
+    if (!config) return oauthFail(req, "google_not_configured");
+    return Response.redirect(buildGoogleAuthUrl(config, createOAuthState()), 302);
+  },
+
+  // Step 2: Google redirects back here with ?code&state — exchange the code for
+  // the profile, sign the user in with the shared session system, and send them
+  // to /start with the session cookie set.
+  "/api/auth/google/callback": async (req: Request) => {
+    const url = new URL(req.url);
+    if (url.searchParams.get("error")) return oauthFail(req, "google_cancelled");
+
+    const state = url.searchParams.get("state");
+    const code  = url.searchParams.get("code");
+    if (!state || !code) return oauthFail(req, "google_failed");
+    if (!consumeOAuthState(state)) return oauthFail(req, "google_state");
+
+    const config = getGoogleConfig(req);
+    if (!config) return oauthFail(req, "google_not_configured");
+
+    try {
+      const accessToken = await exchangeGoogleCode(code, config);
+      const googleUser  = await fetchGoogleUser(accessToken);
+      if (!googleUser.emailVerified) return oauthFail(req, "google_email_not_verified");
+
+      const { session } = signInWithGoogleUser(googleUser.email);
+      return new Response(null, {
+        status: 303,
+        headers: {
+          Location:     new URL("/start", req.url).href,
+          "Set-Cookie": setSessionCookieHeader(session.token, session.expiresAt),
+        },
+      });
+    } catch (e) {
+      console.error("[auth] google oauth failed:", e);
+      return oauthFail(req, "google_failed");
+    }
+  },
 };
+
+function oauthFail(req: Request, reason: string): Response {
+  return Response.redirect(new URL(`/login?error=${reason}`, req.url), 303);
+}

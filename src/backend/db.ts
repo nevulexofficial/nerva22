@@ -21,6 +21,11 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_magic_codes_email_code ON magic_codes(email, code);
 
+  CREATE TABLE IF NOT EXISTS oauth_states (
+    state      TEXT PRIMARY KEY,
+    expires_at INTEGER NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS sessions (
     token      TEXT PRIMARY KEY,
     user_id    TEXT NOT NULL REFERENCES users(id),

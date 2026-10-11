@@ -13,6 +13,34 @@ export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
+export function getOrCreateUserByEmail(email: string): AuthUser {
+  const normalized = normalizeEmail(email);
+  let user = db
+    .prepare("SELECT id, email, created_at AS createdAt FROM users WHERE email = ?")
+    .get(normalized) as AuthUser | undefined;
+
+  if (!user) {
+    user = { id: randomUUID(), email: normalized, createdAt: Date.now() };
+    db.prepare(
+      "INSERT INTO users (id, email, created_at) VALUES (?, ?, ?)",
+    ).run(user.id, user.email, user.createdAt);
+  }
+  return user;
+}
+
+export function createSessionForUser(userId: string): AuthSession {
+  const token = `${randomUUID()}${randomUUID().replace(/-/g, "")}`;
+  const session: AuthSession = {
+    token,
+    userId,
+    expiresAt: Date.now() + SESSION_TTL_MS,
+  };
+  db.prepare(
+    "INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)",
+  ).run(session.token, session.userId, session.expiresAt);
+  return session;
+}
+
 export async function requestLoginCode(email: string): Promise<{ devCode?: string }> {
   const normalized = normalizeEmail(email);
   const code = String(randomInt(100000, 1_000_000));
@@ -45,27 +73,22 @@ export function verifyLoginCode(
 
   db.prepare("UPDATE magic_codes SET used = 1 WHERE rowid = ?").run(row.id);
 
-  let user = db
-    .prepare("SELECT id, email, created_at AS createdAt FROM users WHERE email = ?")
-    .get(normalized) as AuthUser | undefined;
+  const user = getOrCreateUserByEmail(normalized);
+  const session = createSessionForUser(user.id);
 
-  if (!user) {
-    user = { id: randomUUID(), email: normalized, createdAt: Date.now() };
-    db.prepare(
-      "INSERT INTO users (id, email, created_at) VALUES (?, ?, ?)",
-    ).run(user.id, user.email, user.createdAt);
-  }
+  return { user, session };
+}
 
-  const token = `${randomUUID()}${randomUUID().replace(/-/g, "")}`;
-  const session: AuthSession = {
-    token,
-    userId:    user.id,
-    expiresAt: Date.now() + SESSION_TTL_MS,
-  };
-  db.prepare(
-    "INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)",
-  ).run(session.token, session.userId, session.expiresAt);
-
+/**
+ * Signs in a user that authenticated via Google OAuth. Accounts are matched by
+ * verified email, so the same person can also log in through email codes.
+ * The caller is responsible for checking `email_verified` on the Google profile.
+ */
+export function signInWithGoogleUser(
+  email: string,
+): { user: AuthUser; session: AuthSession } {
+  const user = getOrCreateUserByEmail(email);
+  const session = createSessionForUser(user.id);
   return { user, session };
 }
 
