@@ -1,0 +1,4 @@
+# Supabase project linked to this repository (GitHub integration).
+# Used by the Supabase CLI (`supabase link`, `supabase db push`) and by the
+# GitHub integration to know which project owns supabase/migrations/*.
+project_id = "uynqcvutzgezkqkefwzi"

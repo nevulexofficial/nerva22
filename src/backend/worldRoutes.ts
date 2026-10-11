@@ -46,7 +46,7 @@ export async function syncWorldPlayer(input: {
     const meta = await saveService.getMeta(input.saveId);
     if (!meta) return;
 
-    await supabase.from("world_players").upsert(
+    const { error } = await supabase.from("world_players").upsert(
       {
         user_id: input.userId,
         email: input.email ?? null,
@@ -59,6 +59,9 @@ export async function syncWorldPlayer(input: {
       },
       { onConflict: "user_id" },
     );
+    // supabase-js resolves with { error } instead of throwing (e.g. RLS denial
+    // when only the anon key is configured) — surface it instead of faking ok.
+    if (error) console.warn("[world] sync rejected:", error.message);
   } catch (err) {
     console.warn("[world] sync failed:", err);
   }
@@ -71,19 +74,22 @@ export async function pushWorldEvent(entry: {
   body?: string | null;
   leagueSlug?: string | null;
   clubName?: string | null;
-}): Promise<void> {
+}): Promise<{ ok: boolean; error?: string }> {
   const supabase = getSupabase();
-  if (!supabase) return;
+  if (!supabase) return { ok: false, error: "supabase not configured" };
   try {
-    await supabase.from("world_feed").insert({
+    const { error } = await supabase.from("world_feed").insert({
       kind: entry.kind ?? "event",
       title: entry.title,
       body: entry.body ?? null,
       league_slug: entry.leagueSlug ?? null,
       club_name: entry.clubName ?? null,
     });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
   } catch (err) {
     console.warn("[world] feed push failed:", err);
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
 

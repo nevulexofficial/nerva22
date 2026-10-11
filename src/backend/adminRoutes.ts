@@ -176,8 +176,10 @@ export const adminRoutes = {
       return Response.json({ error: "supabase not configured" }, { status: 503 });
     }
 
-    await pushWorldEvent({ kind: "broadcast", title, body: text });
+    const result = await pushWorldEvent({ kind: "broadcast", title, body: text });
+    if (!result.ok) {
+      return Response.json({ error: result.error ?? "broadcast failed" }, { status: 502 });
+    }
     return Response.json({ ok: true });
   },
 } as const;
-
