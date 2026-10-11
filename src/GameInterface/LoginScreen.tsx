@@ -1,6 +1,5 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Mail, KeyRound, ArrowLeft, ArrowRight } from "lucide-react";
 
 // Full-screen background behind the login screen.
 const BACKGROUND_IMAGE_URL =
@@ -29,8 +28,6 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
-type Stage = "email" | "code";
-
 type Translate = (key: string) => string;
 
 function oauthErrorMessage(t: Translate, reason: string | null): string | null {
@@ -41,96 +38,44 @@ function oauthErrorMessage(t: Translate, reason: string | null): string | null {
       return t("common.googleSignInExpired");
     case "google_email_not_verified":
       return t("common.googleSignInUnverified");
-    case "google_failed":
     case "google_not_configured":
+      return t("common.googleSignInNotConfigured");
+    case "google_failed":
       return t("common.googleSignInFailed");
     default:
       return null;
   }
 }
 
+interface GoogleState {
+  enabled:  boolean;
+  checking: boolean;
+}
+
 export function LoginScreen() {
   const { t } = useTranslation();
-  const [stage, setStage] = useState<Stage>("email");
-  const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
-  const [devCode, setDevCode] = useState<string | null>(null);
   // Surfaces Google OAuth errors redirected back from /api/auth/google/callback.
-  const [error, setError] = useState<string | null>(() =>
-    oauthErrorMessage(t, new URLSearchParams(window.location.search).get("error")),
+  const error = oauthErrorMessage(
+    t,
+    new URLSearchParams(window.location.search).get("error"),
   );
-  const [submitting, setSubmitting] = useState(false);
-  // The Google button only appears when the backend has OAuth credentials set.
-  const [googleEnabled, setGoogleEnabled] = useState(false);
+  // The only sign-in method is Google, so the button stays disabled until the
+  // backend confirms OAuth credentials exist (a failed check fails open and
+  // lets the server report the problem).
+  const [google, setGoogle] = useState<GoogleState>({ enabled: false, checking: true });
 
   useEffect(() => {
     let cancelled = false;
     fetch("/api/config")
       .then((res) => (res.ok ? res.json() : null))
       .then((data: { googleAuth?: boolean } | null) => {
-        if (!cancelled && data?.googleAuth) setGoogleEnabled(true);
+        if (!cancelled) setGoogle({ enabled: data?.googleAuth === true, checking: false });
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!cancelled) setGoogle({ enabled: true, checking: false });
+      });
     return () => { cancelled = true; };
   }, []);
-
-  async function handleEmailSubmit(e: FormEvent) {
-    e.preventDefault();
-    setError(null);
-    const trimmed = email.trim();
-    if (!trimmed) {
-      setError("Enter your email");
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const res = await fetch("/api/auth/request-code", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ email: trimmed }),
-      });
-      if (!res.ok) {
-        const data = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(data.error ?? "Could not send code");
-        return;
-      }
-      const data = (await res.json().catch(() => ({}))) as { devCode?: string };
-      setStage("code");
-      // Dev mode: pre-fill and surface the code so login works without SMTP.
-      if (data.devCode) {
-        setDevCode(data.devCode);
-        setCode(data.devCode);
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  async function handleCodeSubmit(e: FormEvent) {
-    e.preventDefault();
-    setError(null);
-    const trimmedCode = code.trim();
-    if (trimmedCode.length !== 6) {
-      setError("Code must be 6 digits");
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const res = await fetch("/api/auth/verify", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ email: email.trim(), code: trimmedCode }),
-      });
-      if (!res.ok) {
-        const data = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(data.error ?? "Invalid code");
-        return;
-      }
-      window.location.href = "/start";
-    } finally {
-      setSubmitting(false);
-    }
-  }
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-background">
@@ -140,7 +85,7 @@ export function LoginScreen() {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${BACKGROUND_IMAGE_URL})` }}
         />
-        {/* Dark overlay so the title and form stay readable */}
+        {/* Dark overlay so the title and button stay readable */}
         <div className="absolute inset-0 bg-background/60" />
       </div>
 
@@ -148,129 +93,42 @@ export function LoginScreen() {
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4">
         <div className="text-center mb-12">
           <h1 className="text-6xl md:text-8xl font-black tracking-tight font-display">
-            <span className="text-foreground">TOUCH</span>
-            <span className="text-primary glow-text">LINES</span>
+            <span className="text-foreground">NERV</span>
+            <span className="text-primary glow-text">4</span>
           </h1>
           <p className="mt-4 text-sm md:text-base tracking-[0.4em] text-muted-foreground uppercase font-medium">
-            {stage === "email" ? "Sign in to your account" : "Enter the 6-digit code"}
+            {t("common.signInTitle")}
           </p>
         </div>
 
-        {stage === "email" ? (
-          <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4 w-full max-w-sm">
-            <div className="card-arcade rounded-xl p-1.5">
-              <div className="relative flex items-center">
-                <Mail className="absolute left-4 w-5 h-5 text-muted-foreground pointer-events-none" />
-                <input
-                  type="email"
-                  autoComplete="email"
-                  autoFocus
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  disabled={submitting}
-                  className="w-full bg-transparent border-0 pl-12 pr-4 py-3 text-base text-foreground placeholder:text-muted-foreground/60 focus:outline-none disabled:opacity-50"
-                />
-              </div>
-            </div>
-
-            {error && (
-              <p className="text-xs text-center text-destructive uppercase tracking-wider font-semibold">
-                {error}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="flex items-center justify-center gap-3 w-full py-4 px-8 bg-primary text-primary-foreground rounded-xl font-bold text-lg uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98] glow-primary border-0 cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
-            >
-              {submitting ? "Sending…" : "Send login code"}
-              {!submitting && <ArrowRight className="w-5 h-5" />}
-            </button>
-
-            {googleEnabled && (
-              <>
-                <div className="flex items-center gap-3 py-1">
-                  <div className="h-px flex-1 bg-muted/30" />
-                  <span className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-                    {t("common.or")}
-                  </span>
-                  <div className="h-px flex-1 bg-muted/30" />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => { window.location.assign("/api/auth/google"); }}
-                  className="flex items-center justify-center gap-3 w-full py-4 px-8 bg-white text-[#1f1f1f] rounded-xl font-bold text-lg uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98] border-0 cursor-pointer"
-                >
-                  <GoogleIcon className="w-6 h-6" />
-                  {t("common.googleSignIn")}
-                </button>
-              </>
-            )}
-          </form>
-        ) : (
-          <form onSubmit={handleCodeSubmit} className="flex flex-col gap-4 w-full max-w-sm">
-            <p className="text-center text-xs text-muted-foreground uppercase tracking-wider">
-              {t("common.sentTo")} <span className="text-foreground font-semibold normal-case">{email}</span>
+        <div className="flex flex-col gap-4 w-full max-w-sm">
+          {error && (
+            <p className="text-xs text-center text-destructive uppercase tracking-wider font-semibold">
+              {error}
             </p>
+          )}
 
-            {devCode && (
-              <div className="rounded-xl border border-primary/40 bg-primary/10 px-4 py-3 text-center">
-                <p className="text-[10px] uppercase tracking-widest text-primary/80 font-bold mb-1">
-                  Dev mode — no email configured
-                </p>
-                <p className="text-2xl font-black font-mono tracking-[0.4em] text-primary glow-text">
-                  {devCode}
-                </p>
-              </div>
-            )}
+          <button
+            type="button"
+            disabled={!google.enabled}
+            onClick={() => { window.location.assign("/api/auth/google"); }}
+            className="flex items-center justify-center gap-3 w-full py-4 px-8 bg-white text-[#1f1f1f] rounded-xl font-bold text-lg uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98] border-0 cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
+          >
+            <GoogleIcon className="w-6 h-6" />
+            {t("common.googleSignIn")}
+          </button>
 
-            <div className="card-arcade rounded-xl p-1.5">
-              <div className="relative flex items-center">
-                <KeyRound className="absolute left-4 w-5 h-5 text-muted-foreground pointer-events-none" />
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="\d{6}"
-                  maxLength={6}
-                  autoComplete="one-time-code"
-                  autoFocus
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-                  placeholder="123456"
-                  disabled={submitting}
-                  className="w-full bg-transparent border-0 pl-12 pr-4 py-3 text-base font-mono tracking-[0.5em] text-center text-foreground placeholder:text-muted-foreground/40 focus:outline-none disabled:opacity-50"
-                />
-              </div>
-            </div>
-
-            {error && (
-              <p className="text-xs text-center text-destructive uppercase tracking-wider font-semibold">
-                {error}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="flex items-center justify-center gap-3 w-full py-4 px-8 bg-primary text-primary-foreground rounded-xl font-bold text-lg uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98] glow-primary border-0 cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
-            >
-              {submitting ? "Verifying…" : "Sign in"}
-              {!submitting && <ArrowRight className="w-5 h-5" />}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => { setStage("email"); setCode(""); setDevCode(null); setError(null); }}
-              className="flex items-center justify-center gap-2 w-full py-3 px-6 text-muted-foreground font-semibold uppercase tracking-wider text-xs transition-all hover:text-primary cursor-pointer bg-transparent border-0"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              {t("common.useADifferentEmail")}
-            </button>
-          </form>
-        )}
+          {google.checking && (
+            <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest">
+              {t("common.checkingSignIn")}
+            </p>
+          )}
+          {!google.checking && !google.enabled && (
+            <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest">
+              {t("common.googleSignInNotConfigured")}
+            </p>
+          )}
+        </div>
 
         <div className="absolute bottom-6 text-xs text-muted-foreground/50 font-mono">
           {t("common.version")}
