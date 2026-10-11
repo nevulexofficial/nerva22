@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { getBrowserSupabase } from "@/supabaseClient";
 
 // Full-screen background behind the login screen.
 const BACKGROUND_IMAGE_URL =
@@ -28,54 +29,53 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
-type Translate = (key: string) => string;
-
-function oauthErrorMessage(t: Translate, reason: string | null): string | null {
-  switch (reason) {
-    case "google_cancelled":
-      return t("common.googleSignInCancelled");
-    case "google_state":
-      return t("common.googleSignInExpired");
-    case "google_email_not_verified":
-      return t("common.googleSignInUnverified");
-    case "google_not_configured":
-      return t("common.googleSignInNotConfigured");
-    case "google_failed":
-      return t("common.googleSignInFailed");
-    default:
-      return null;
-  }
-}
-
-interface GoogleState {
+interface SupabaseState {
   enabled:  boolean;
   checking: boolean;
 }
 
 export function LoginScreen() {
   const { t } = useTranslation();
-  // Surfaces Google OAuth errors redirected back from /api/auth/google/callback.
-  const error = oauthErrorMessage(
-    t,
-    new URLSearchParams(window.location.search).get("error"),
-  );
-  // The only sign-in method is Google, so the button stays disabled until the
-  // backend confirms OAuth credentials exist (a failed check fails open and
-  // lets the server report the problem).
-  const [google, setGoogle] = useState<GoogleState>({ enabled: false, checking: true });
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  // The only sign-in method is Google through Supabase Auth, so the button
+  // stays disabled until the backend confirms credentials exist (a failed
+  // check fails open and lets Supabase report the problem).
+  const [supabase, setSupabase] = useState<SupabaseState>({ enabled: false, checking: true });
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/config")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: { googleAuth?: boolean } | null) => {
-        if (!cancelled) setGoogle({ enabled: data?.googleAuth === true, checking: false });
+    getBrowserSupabase()
+      .then((client) => {
+        if (!cancelled) setSupabase({ enabled: client !== null, checking: false });
       })
       .catch(() => {
-        if (!cancelled) setGoogle({ enabled: true, checking: false });
+        if (!cancelled) setSupabase({ enabled: true, checking: false });
       });
     return () => { cancelled = true; };
   }, []);
+
+  async function signInWithGoogle() {
+    setSubmitting(true);
+    setError(null);
+    const client = await getBrowserSupabase();
+    if (!client) {
+      setSubmitting(false);
+      setError(t("common.supabaseNotConfigured"));
+      return;
+    }
+
+    const { error: oauthError } = await client.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+
+    // On success the browser is navigating away to Google; only surface errors.
+    if (oauthError) {
+      setSubmitting(false);
+      setError(t("common.googleSignInFailed"));
+    }
+  }
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-background">
@@ -110,22 +110,22 @@ export function LoginScreen() {
 
           <button
             type="button"
-            disabled={!google.enabled}
-            onClick={() => { window.location.assign("/api/auth/google"); }}
+            disabled={!supabase.enabled || submitting}
+            onClick={() => { void signInWithGoogle(); }}
             className="flex items-center justify-center gap-3 w-full py-4 px-8 bg-white text-[#1f1f1f] rounded-xl font-bold text-lg uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98] border-0 cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
           >
             <GoogleIcon className="w-6 h-6" />
             {t("common.googleSignIn")}
           </button>
 
-          {google.checking && (
+          {supabase.checking && (
             <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest">
               {t("common.checkingSignIn")}
             </p>
           )}
-          {!google.checking && !google.enabled && (
+          {!supabase.checking && !supabase.enabled && (
             <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest">
-              {t("common.googleSignInNotConfigured")}
+              {t("common.supabaseNotConfigured")}
             </p>
           )}
         </div>

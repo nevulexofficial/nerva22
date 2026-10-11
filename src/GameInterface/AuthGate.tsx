@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { identifyUser, resetAnalytics } from "@/analytics";
+import { getBrowserSupabase } from "@/supabaseClient";
 
 type GateState = "loading" | "authed" | "redirecting";
 
@@ -48,6 +49,10 @@ export async function logout(): Promise<void> {
   try {
     await fetch("/api/auth/logout", { method: "POST" });
   } finally {
+    // Drop the Supabase session too, so the next visit starts from Google.
+    getBrowserSupabase()
+      .then((supabase) => supabase?.auth.signOut().catch(() => {}))
+      .catch(() => {});
     await resetAnalytics().catch(() => {});
     try {
       localStorage.removeItem("touchlines:session");

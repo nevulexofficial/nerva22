@@ -2,12 +2,14 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import en from "@/i18n/locales/en.json";
 import ptBR from "@/i18n/locales/pt-BR.json";
+import es from "@/i18n/locales/es.json";
 
-export type SupportedLanguage = "en" | "pt-BR";
+export type SupportedLanguage = "en" | "pt-BR" | "es";
 
 export const SUPPORTED_LANGUAGES: { code: SupportedLanguage; label: string; flag: string }[] = [
   { code: "en", label: "English", flag: "gb" },
   { code: "pt-BR", label: "Português (Brasil)", flag: "br" },
+  { code: "es", label: "Español", flag: "es" },
 ];
 
 const STORAGE_KEY = "touchlines:lang";
@@ -18,6 +20,7 @@ function detectBrowserLanguage(): SupportedLanguage {
   for (const tag of candidates) {
     const lower = tag.toLowerCase();
     if (lower.startsWith("pt")) return "pt-BR";
+    if (lower.startsWith("es")) return "es";
     if (lower.startsWith("en")) return "en";
   }
   return "en";
@@ -26,7 +29,7 @@ function detectBrowserLanguage(): SupportedLanguage {
 export function getStoredLanguage(): SupportedLanguage {
   if (typeof window === "undefined") return "en";
   const saved = window.localStorage.getItem(STORAGE_KEY);
-  if (saved === "en" || saved === "pt-BR") return saved;
+  if (saved === "en" || saved === "pt-BR" || saved === "es") return saved;
   return detectBrowserLanguage();
 }
 
@@ -44,6 +47,7 @@ export function initI18n() {
     resources: {
       en: { translation: en },
       "pt-BR": { translation: ptBR },
+      es: { translation: es },
     },
     lng: getStoredLanguage(),
     fallbackLng: "en",

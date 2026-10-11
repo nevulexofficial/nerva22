@@ -2,6 +2,7 @@ import { serve } from "bun";
 import { apiRoutes } from "@/backend/routes";
 
 import loginPage from "./pages/login/index.html";
+import authCallbackPage from "./pages/auth-callback/index.html";
 import startPage from "./pages/start/index.html";
 import dashboardPage from "./pages/dashboard/index.html";
 import matchPage from "./pages/match/index.html";
@@ -27,6 +28,8 @@ const server = serve({
     // Root entry point — visitors are always sent to the login screen.
     "/": () => Response.redirect("/login", 302),
     "/login": loginPage,
+    // Landing page for the Supabase Google OAuth redirect.
+    "/auth/callback": authCallbackPage,
     "/start": startPage,
     "/new-game": newGamePage,
     "/dashboard": dashboardPage,

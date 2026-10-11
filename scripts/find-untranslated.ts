@@ -35,6 +35,7 @@ const KEY_ROOTS = ["src"]; // t() can live anywhere in the source tree
 const LOCALES: Record<string, string> = {
   en: "src/i18n/locales/en.json",
   "pt-BR": "src/i18n/locales/pt-BR.json",
+  es: "src/i18n/locales/es.json",
 };
 
 // Dev-only / debug surfaces that are intentionally not translated.

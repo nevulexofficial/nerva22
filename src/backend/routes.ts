@@ -14,7 +14,6 @@ import type { TacticsSave } from "@/types/tacticsTypes";
 import type { Fixture } from "@/types/calendarTypes";
 import { clubSlugFromSquadId, squadIdToClubSlugMap } from "@/backend/squadIdResolve";
 import { authRoutes } from "@/backend/auth/routes";
-import { isGoogleAuthConfigured } from "@/backend/auth/googleAuth";
 import { worldRoutes } from "@/backend/worldRoutes";
 import { adminRoutes } from "@/backend/adminRoutes";
 import { requireAuth, requireSaveOwner } from "@/backend/auth/middleware";
@@ -34,13 +33,16 @@ export const apiRoutes = {
 
   // Public runtime config for the frontend. PostHog is only enabled when
   // POSTHOG_KEY is set — the project key is a public client token.
-  // googleAuth toggles the "Sign in with Google" button on the login screen.
+  // supabase exposes the URL + anon key (both public) so the browser can run
+  // the "Sign in with Google" OAuth flow through Supabase Auth.
   "/api/config": () => {
     const key = process.env.POSTHOG_KEY?.trim();
     const host = process.env.POSTHOG_HOST?.trim() || "https://us.i.posthog.com";
+    const supabaseUrl = process.env.SUPABASE_URL?.trim();
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY?.trim();
     return Response.json({
       posthog: key ? { key, host } : null,
-      googleAuth: isGoogleAuthConfigured(),
+      supabase: supabaseUrl && supabaseAnonKey ? { url: supabaseUrl, anonKey: supabaseAnonKey } : null,
     });
   },
 

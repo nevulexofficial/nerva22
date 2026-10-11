@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Gamepad2, FolderOpen, Settings, Trash2, Play } from "lucide-react";
 import { loadGameSave, deleteGameSave } from "@/GameInterface/gameSession";
 import { SettingsOverlay } from "@/GameInterface/SettingsScreen";
+import { BackgroundMusic } from "@/GameInterface/BackgroundMusic";
 
 interface SaveEntry {
   id: string;
@@ -131,9 +132,9 @@ export function StartScreen() {
             <button
               type="button"
               onClick={() => setIsSettingsOpen(true)}
-              className="flex items-center justify-center gap-3 w-full py-3 px-6 text-muted-foreground font-semibold uppercase tracking-wider transition-all hover:text-primary cursor-pointer bg-transparent border-0"
+              className="flex items-center justify-center gap-3 w-full py-4 px-8 card-arcade text-secondary-foreground rounded-xl font-bold text-lg uppercase tracking-wider transition-all hover:scale-[1.02] hover:border-primary/50 active:scale-[0.98] cursor-pointer"
             >
-              <Settings className="w-5 h-5" />
+              <Settings className="w-6 h-6" />
               {t("startScreen.settings")}
             </button>
           </div>
@@ -203,6 +204,8 @@ export function StartScreen() {
       </div>
 
       <SettingsOverlay open={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+
+      <BackgroundMusic />
     </div>
   );
 }
