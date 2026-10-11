@@ -2,6 +2,10 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Mail, KeyRound, ArrowLeft, ArrowRight } from "lucide-react";
 
+// Full-screen background behind the login screen.
+const BACKGROUND_IMAGE_URL =
+  "https://i.postimg.cc/Qdg50qcZ/Picsart-26-10-11-09-23-50-485.jpg";
+
 function GoogleIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 48 48" aria-hidden="true">
@@ -130,30 +134,14 @@ export function LoginScreen() {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-background">
-      {/* Football Field Background — same as StartScreen */}
+      {/* Background image */}
       <div className="absolute inset-0">
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[oklch(0.08_0.02_var(--team-hue))] to-transparent">
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 w-80 h-24 border-2 border-muted/30 rounded-b-lg">
-            <div
-              className="w-full h-full"
-              style={{
-                backgroundImage: `
-                  linear-gradient(to right, oklch(0.3 0.02 var(--team-hue)) 1px, transparent 1px),
-                  linear-gradient(to bottom, oklch(0.3 0.02 var(--team-hue)) 1px, transparent 1px)
-                `,
-                backgroundSize: "12px 12px",
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="absolute top-28 left-0 right-0 bottom-0 bg-gradient-to-b from-[oklch(0.18_0.04_var(--team-hue))] via-[oklch(0.14_0.03_var(--team-hue))] to-[oklch(0.10_0.02_var(--team-hue))]">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full border-2 border-muted/20" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-muted/20" />
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-96 h-32 border-t-2 border-l-2 border-r-2 border-muted/15 rounded-t-lg" />
-        </div>
-
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,oklch(0.08_0.02_var(--team-hue))_100%)]" />
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${BACKGROUND_IMAGE_URL})` }}
+        />
+        {/* Dark overlay so the title and form stay readable */}
+        <div className="absolute inset-0 bg-background/60" />
       </div>
 
       {/* Content */}

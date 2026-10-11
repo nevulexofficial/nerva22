@@ -1,7 +1,6 @@
 import { serve } from "bun";
 import { apiRoutes } from "@/backend/routes";
 
-import landingPage from "./pages/landing/index.html";
 import loginPage from "./pages/login/index.html";
 import startPage from "./pages/start/index.html";
 import dashboardPage from "./pages/dashboard/index.html";
@@ -25,7 +24,8 @@ import adminPage from "./pages/admin/index.html";
 
 const server = serve({
   routes: {
-    "/": landingPage,
+    // Root entry point — visitors are always sent to the login screen.
+    "/": () => Response.redirect("/login", 302),
     "/login": loginPage,
     "/start": startPage,
     "/new-game": newGamePage,
